@@ -22,3 +22,6 @@ Also collection `fetch` method:
 # Dependencies
 - PromiseKit
 - Alamofire
+
+# License
+MIT
