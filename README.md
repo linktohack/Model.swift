@@ -16,7 +16,7 @@ Support basic HTTP methods, all returns Observable:
 Also collection `fetch` method:
 
 ```swift
-    static func fetch(url: String?, params: [String: String]?) -> Promise<[Model]> {
+    static func fetch(url: String?, params: [String: String]?) -> Observable<[Model]> {
 ```
 
 # Dependencies
