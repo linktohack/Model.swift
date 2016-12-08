@@ -3,7 +3,7 @@ A simple, stupid Model for Swift
 
 # Feature
 
-Support basic HTTP methods, all returns Promise:
+Support basic HTTP methods, all returns Observable:
 
 ```swift
     func create() -> Promise<Model> { return sync(method: .create) }
@@ -20,8 +20,8 @@ Also collection `fetch` method:
 ```
 
 # Dependencies
-- PromiseKit
 - Alamofire
+- RxSwift
 
 # License
 MIT
