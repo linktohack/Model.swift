@@ -6,11 +6,11 @@ A simple, stupid Model for Swift
 Support basic HTTP methods, all returns Observable:
 
 ```swift
-    func create() -> Promise<Model> { return sync(method: .create) }
-    func update() -> Promise<Model> { return sync(method: .update) }
-    func patch() -> Promise<Model> { return sync(method: .patch) }
-    func delete() -> Promise<Model> { return sync(method: .delete) }
-    func read() -> Promise<Model> { return sync(method: .read) }
+    func create() -> Observable<Model> { return sync(method: .create) }
+    func update() -> Observable<Model> { return sync(method: .update) }
+    func patch() -> Observable<Model> { return sync(method: .patch) }
+    func delete() -> Observable<Model> { return sync(method: .delete) }
+    func read() -> Observable<Model> { return sync(method: .read) }
 ```
 
 Also collection `fetch` method:
