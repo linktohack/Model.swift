@@ -7,7 +7,7 @@
 //
 
 import Alamofire
-import PromiseKit
+import RxSwift
 
 class Model {
     enum Method {
@@ -42,7 +42,7 @@ class Model {
         return self
     }
     
-    func sync(method: Method) -> Promise<Model>{
+    func sync(method: Method) -> Observable<Model>{
         let methodMap = [
             Method.create: HTTPMethod.post,
             Method.update: HTTPMethod.put,
@@ -60,40 +60,49 @@ class Model {
         
         let parameters = m != .get ? toJSON() : [:]
         
-        return Promise<Model>(resolvers: { (resolve, reject) in
-            Alamofire.request(parameterizedUrl!, method: m, parameters: parameters).responseJSON(completionHandler: {res in
+        return Observable.create { subscriber in
+            let request = Alamofire.request(parameterizedUrl!, method: m, parameters: parameters).responseJSON(completionHandler: {res in
                 if res.result.isFailure {
-                    reject (res.result.error!)
+                    subscriber.onError(res.result.error!)
                 } else {
                     let _ = self.fromJSON(res.result.value! as! [String : Any?])
-                    resolve(self)
+                    subscriber.onNext(self)
+                    subscriber.onCompleted()
                 }
             })
-        })
+            
+            return Disposables.create {
+                request.cancel()
+            }
+        }
+        
     }
     
-    func create() -> Promise<Model> { return sync(method: .create) }
-    func update() -> Promise<Model> { return sync(method: .update) }
-    func patch() -> Promise<Model> { return sync(method: .patch) }
-    func delete() -> Promise<Model> { return sync(method: .delete) }
-    func read() -> Promise<Model> { return sync(method: .read) }
-    
-    
-    static func fetch(url: String?, params: [String: String]?) -> Promise<[Model]> {
+    func create() -> Observable<Model> { return sync(method: .create) }
+    func update() -> Observable<Model> { return sync(method: .update) }
+    func patch() -> Observable<Model> { return sync(method: .patch) }
+    func delete() -> Observable<Model> { return sync(method: .delete) }
+    func read() -> Observable<Model> { return sync(method: .read) }
+
+    static func fetch(url: String?, params: [String: String]?) -> Observable<[Model]> {
         let parameterizedUrl = params?.reduce(url!, { (acc: String, it: (key: String, value: String)) -> String in
             return acc.replacingOccurrences(of: [":", it.key].joined(), with: "")
         }).replacingOccurrences(of: ":_id", with: "")
         
-        return Promise<[Model]>(resolvers: { (resolve, reject) in
-            Alamofire.request(parameterizedUrl!, method: .get).responseJSON(completionHandler: {res in
+        return Observable.create {subscriber in
+            let request = Alamofire.request(parameterizedUrl!, method: .get).responseJSON(completionHandler: {res in
                 if res.result.isFailure {
-                    reject (res.result.error!)
+                    subscriber.onError(res.result.error!)
+                    subscriber.onCompleted()
                 } else {
-                    resolve((res.result.value as! [[String: Any?]]).map({ self.init(url: url, params: params).fromJSON($0) }))
+                    subscriber.onNext((res.result.value as! [[String: Any?]]).map({ self.init(url: url, params: params).fromJSON($0) }))
+                    subscriber.onCompleted()
                 }
             })
-        })
+            
+            return Disposables.create {
+                request.cancel()
+            }
+        }
     }
 }
-
-
